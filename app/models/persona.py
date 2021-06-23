@@ -1,4 +1,4 @@
-from app.database import * 
+"""from app.database import *
 
 class Persona(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -7,4 +7,4 @@ class Persona(db.Model):
     
     def __str__(self):
         return f"id : {self.id}, nombre : {self.nombre}, email : {self.email}"
-    
+    """
