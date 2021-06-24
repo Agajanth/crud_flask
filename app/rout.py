@@ -22,5 +22,25 @@ def insertar_persona():
     db.session.commit()
     app.logger.debug(f"Usuario {persona} agregado con éxito")
     return Response(jsonify({"Operacion registro":"realizada con exito"}),status=200)
-    
+
+@app.route('/persona/<int:id>',methods=['GET', 'POST','DELETE'])
+def persona(id):
+    persona = Persona.query.filter_by(id=id).first_or_404()
+    if request.method == 'GET':
+        #parse_persona = Parse.parse(persona)
+        app.logger.debug("Se consulta el registro")
+        return jsonify({"persona":{"nombre":persona.nombre,"email":persona.email}})
+    elif request.method == 'POST':
+        persona.nombre = request.json['name']
+        persona.email = request.json['email']
+        app.logger.debug(f"Persona a actualizar -> {persona}")
+        db.session.commit()
+        #parse_persona = Parse.parse(persona)
+        return jsonify({"usuario actualizado":{"nombre":persona.nombre,"email":persona.email}})
+    elif request.method =='DELETE':
+        app.logger.debug(f"Deleting {persona}")
+        db.session.delete(persona)
+        app.logger.debug(f"Commit on db")
+        db.session.commit()
+        return jsonify({"User deleted":{"nombre":persona.nombre,"email":persona.email}})    
     
