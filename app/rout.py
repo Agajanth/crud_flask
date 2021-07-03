@@ -115,7 +115,10 @@ def login_andGet_jtw():
         return jsonify({"login":"incorrecto"}),401
     else:
         token = create_access_token(identity=user.id)
-        return jsonify({"login":"exito","token":token})
+        return jsonify({"login":"exito","token":token}),200
     
 
-    
+@app.route('/protected',methods=['POST'])
+@jwt_required(locations=["headers"])
+def protected():
+    return jsonify({"Authorization":"ok"}),200
