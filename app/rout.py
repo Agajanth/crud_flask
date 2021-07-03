@@ -4,10 +4,23 @@ from app.database import *
 from flask import jsonify, Response,request,session
 from app.utils.parser import Parse
 import os
+from flask_jwt_extended import create_access_token
+from flask_jwt_extended import jwt_required
+from flask_jwt_extended import JWTManager
+from flask_jwt_extended import set_access_cookies
+from flask_jwt_extended import unset_jwt_cookies
 secret_key = os.urandom(16)
-
+jwt_secret_key = os.urandom(32)
+#configure secret key for session flask
 app.config['SECRET_KEY'] = secret_key
-
+#configure jwt token secret key 
+app.config["JWT_SECRET_KEY"] = jwt_secret_key
+# Here you can globally configure all the ways you want to allow JWTs to
+# be sent to your web application. By default, this will be only headers.
+#app.config["JWT_TOKEN_LOCATION"] = ["headers", "cookies", "json", "query_string"]
+app.config["JWT_TOKEN_LOCATION"] = ["headers"]
+#routes
+jwt = JWTManager(app)
 @app.route('/login', methods=['POST'])
 def login():
     username = request.json['username']
@@ -54,7 +67,9 @@ def all_registers():
         app.logger.debug(f"Listado de personas : {listado_personas}")
         return jsonify({"Total personas":total,"listado Personas":listado_personas})
     else:
-        return jsonify({"Usuario":"No esta en session"})
+        return jsonify({"Usuario":"No esta en session"}),401
+    
+    
 @app.route('/insertar_persona',methods=['POST'])
 def insertar_persona():
     if 'username' in session:
@@ -90,4 +105,17 @@ def persona(id):
         app.logger.debug(f"Commit on db")
         db.session.commit()
         return jsonify({"User deleted":{"nombre":persona.nombre,"email":persona.email}})    
+    
+@app.route('/login_andGet_jtw',methods=['POST'])
+def login_andGet_jtw():
+    username = request.json['username']
+    password = request.json['password']
+    user = Usuario.query.filter_by(username=username).first()
+    if not user or not check_password_hash(user.password,password):
+        return jsonify({"login":"incorrecto"}),401
+    else:
+        token = create_access_token(identity=user.id)
+        return jsonify({"login":"exito","token":token})
+    
+
     
